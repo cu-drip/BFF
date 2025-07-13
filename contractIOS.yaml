@@ -1,0 +1,337 @@
+openapi: 3.0.0
+info:
+  title: API турниров и статистики матчей
+  version: 1.0.0
+  description: >
+    Эндпоинты для управления турнирами, статистикой матчей и общей статистикой пользователей.
+servers:
+  - url: /api/v1
+
+paths:
+  /tournir/list/{id}:
+    get:
+      summary: Получить турниры пользователя по id
+      description: Получить список турниров, на которых зарегистрирован участник по его ID
+      parameters:
+        - name: id
+          in: path
+          description: ID участника
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Список турниров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tournament'
+
+  /tournir/{id}:
+    post:
+      summary: Обновить информацию о турнире по id при изменении состояния турнира
+      description: Отправить данные турнира при изменении его состояния по ID турнира
+      parameters:
+        - name: id
+          in: path
+          description: ID турнира
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Объект турнира для обновления
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tournament'
+      responses:
+        '200':
+          description: Информация о турнире обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+
+  /MatchStats/{id}:
+    get:
+      summary: Получить статистику матчей турнира
+      description: Получить список матчей с их статистикой по ID турнира
+      parameters:
+        - name: id
+          in: path
+          description: ID турнира
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Список статистики матчей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MatchStats'
+
+    post:
+      summary: Отправить статистику матчей турнира
+      description: Отправить список статистики матчей по ID турнира
+      parameters:
+        - name: id
+          in: path
+          description: ID турнира
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Массив объектов со статистикой матчей
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/MatchStats'
+      responses:
+        '200':
+          description: Статистика матчей сохранена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MatchStats'
+
+  /user/stat/{id}:
+    get:
+      summary: Получить общую статистику пользователя
+      description: Получить агрегированную статистику пользователя по его ID
+      parameters:
+        - name: id
+          in: path
+          description: ID пользователя
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Общая статистика пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStat'
+
+components:
+  schemas:
+    Tournament:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        sport:
+          type: string
+          nullable: true
+        typeTournament:
+          type: string
+          nullable: true
+        typeGroup:
+          type: string
+          nullable: true
+        matchesNumbers:
+          type: integer
+          nullable: true
+        startTime:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        entryCost:
+          type: number
+          format: double
+          nullable: true
+        maxParticipants:
+          type: integer
+          nullable: true
+        registrationDeadline:
+          type: string
+          format: date-time
+          nullable: true
+        place:
+          type: string
+          nullable: true
+        organizedId:
+          type: string
+          nullable: true
+        tournirInstantState:
+          type: string
+      required:
+        - id
+        - tournirInstantState
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        patronymic:
+          type: string
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+        hashedPassword:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+          nullable: true
+        age:
+          type: integer
+          nullable: true
+        sex:
+          type: string
+          enum:
+            - male
+            - female
+            - other
+          nullable: true
+        weight:
+          type: number
+          format: float
+          nullable: true
+        height:
+          type: number
+          format: float
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+        admin:
+          type: boolean
+      required:
+        - id
+        - name
+        - surname
+        - email
+        - hashedPassword
+
+    MatchStats:
+      type: object
+      properties:
+        tournamentID:
+          type: string
+        matchID:
+          type: string
+        first:
+          $ref: '#/components/schemas/User'
+        second:
+          $ref: '#/components/schemas/User'
+        sport:
+          type: string
+          nullable: true
+        timePlayed:
+          type: integer
+          nullable: true
+        goals:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+          nullable: true
+        assists:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+          nullable: true
+        fouls:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+          nullable: true
+        points:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+          nullable: true
+        knockdowns:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+          nullable: true
+        setsWon:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+          nullable: true
+        yellowCards:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+          nullable: true
+        isFirstWinner:
+          type: boolean
+          nullable: true
+      required:
+        - tournamentID
+        - matchID
+        - first
+        - second
+
+    UserStat:
+      type: object
+      properties:
+        sport:
+          type: string
+          nullable: true
+        totalWins:
+          type: integer
+          nullable: true
+        totalLoses:
+          type: integer
+          nullable: true
+        winrate:
+          type: integer
+          description: Процент побед (0–100)
+          nullable: true
+      required:
+        - sport
