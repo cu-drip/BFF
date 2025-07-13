@@ -1,0 +1,37 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+svc:
+  user:
+    base-url: ${SVC_USER_BASE_URL:http://51.250.38.151:8081}
+  competition:
+    base-url: ${SVC_COMPETITION_BASE_URL:http://51.250.38.151:8082}
+  feedback:
+    base-url: ${SVC_FEEDBACK_BASE_URL:http://51.250.38.151:8083}
+  chat:
+    base-url: ${SVC_CHAT_BASE_URL:http://51.250.38.151:8000}
+  statistic:
+    base-url: ${SVC_STATISTIC_BASE_URL:http://51.250.38.151:8080}
+
+# Настройки для Docker окружения
+spring:
+  main:
+    banner-mode: console
+  web:
+    resources:
+      add-mappings: false
+
+# Логирование
+logging:
+  level:
+    com.example.bff: INFO
+    org.springframework.web.reactive.function.client: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Настройки WebClient
+webclient:
+  timeout:
+    connect: 2000
+    read: 5000
+    write: 5000

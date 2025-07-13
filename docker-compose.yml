@@ -1,0 +1,81 @@
+secrets:
+  jwt_secret:
+    file: ../secrets/jwt_secret.key
+
+services:
+  enginedb:
+    image: postgres:16-alpine
+    container_name: engine-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: engine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5397:5432"
+    volumes:
+      - engine_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d engine" ]
+      interval: 1s
+      retries: 5
+    networks:
+      - microservices-net
+
+  competition-engine:
+    build:
+      context: ../competition-engine  # Путь к папке с competition-engine
+      dockerfile: Dockerfile
+    container_name: competition-engine
+    restart: on-failure
+    depends_on:
+      enginedb:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://enginedb:5432/engine
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      JWT_SECRET_PATH: /run/secrets/jwt_secret
+      STATISTIC_URL: http://bff:8080
+    ports:
+      - "8080:8080"
+    secrets:
+      - jwt_secret
+    networks:
+      - microservices-net
+
+  bff:
+    build:
+      context: .  # Текущая папка с BFF
+      dockerfile: Dockerfile
+    container_name: bff-service
+    restart: on-failure
+    depends_on:
+      - competition-engine
+    environment:
+      # Базовые URL сервисов
+      SVC_USER_BASE_URL: http://51.250.38.151:8081
+      SVC_COMPETITION_BASE_URL: http://51.250.38.151:8082
+      SVC_FEEDBACK_BASE_URL: http://51.250.38.151:8083
+      SVC_CHAT_BASE_URL: http://51.250.38.151:8000
+      SVC_STATISTIC_BASE_URL: http://51.250.38.151:8080
+      # Настройки Spring Boot
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8080
+    ports:
+      - "8085:8080"  # BFF доступен на порту 8085
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  engine_data:
+
+networks:
+  microservices-net:
+    external: true
