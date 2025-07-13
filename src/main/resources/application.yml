@@ -1,17 +1,17 @@
 server:
-  port: ${SERVER_PORT:8080}
+  port: 8080
 
 svc:
   user:
-    base-url: ${SVC_USER_BASE_URL:http://51.250.38.151:8081}
+    base-url: ${SVC_USER_BASE_URL}
   competition:
-    base-url: ${SVC_COMPETITION_BASE_URL:http://51.250.38.151:8082}
+    base-url: ${SVC_COMPETITION_BASE_URL}
   feedback:
-    base-url: ${SVC_FEEDBACK_BASE_URL:http://51.250.38.151:8083}
+    base-url: ${SVC_FEEDBACK_BASE_URL}
   chat:
-    base-url: ${SVC_CHAT_BASE_URL:http://51.250.38.151:8000}
+    base-url: ${SVC_CHAT_BASE_URL}
   statistic:
-    base-url: ${SVC_STATISTIC_BASE_URL:http://51.250.38.151:8080}
+    base-url: ${SVC_STATISTIC_BASE_URL}
 
 # Настройки для Docker окружения
 spring:
