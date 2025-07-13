@@ -11,6 +11,7 @@ services:
       SVC_USER_BASE_URL: http://userservice:8080
       SVC_COMPETITION_BASE_URL: http://competitionservice:8080
       SVC_FEEDBACK_BASE_URL: http://feedbackservice:8080
+      SVC_ENGINE_BASE_URL: http://engineservice:8080
       SVC_CHAT_BASE_URL: http://chatservice:8000
       SVC_STATISTIC_BASE_URL: http://statisticservice:8080
       # Настройки Spring Boot
