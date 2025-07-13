@@ -44,6 +44,7 @@ public class GenericProxyController {
                 "teams",       competitionClient,
                 "tour",        engineClient,
                 "matches",     engineClient,
+                "bracket",     engineClient,
                 "stats",       statisticClient
         );
     }
