@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Map.entry;
+
 @RestController("iosProxyController")
 @RequestMapping("/api/v1web")
 public class GenericProxyController {
@@ -35,19 +37,21 @@ public class GenericProxyController {
             @Qualifier("engineWebClient")      WebClient engineClient,
             @Qualifier("statisticWebClient")   WebClient statisticClient
     ) {
-        this.clients = Map.of(
-                "users",       userClient,
-                "auth",        userClient,
-                "feedback",    feedbackClient,
-                "chat",        chatClient,
-                "tournaments", competitionClient,
-                "teams",       competitionClient,
-                "tour",        engineClient,
-                "matches",     engineClient,
-                "bracket",     engineClient,
-                "stats",       statisticClient
+        this.clients = Map.ofEntries(
+                entry("users",       userClient),
+                entry("auth",        userClient),
+                entry("feedback",    feedbackClient),
+                entry("chats",       chatClient),
+                entry("tournaments", competitionClient),
+                entry("teams",       competitionClient),
+                entry("tour",        engineClient),
+                entry("matches",     engineClient),
+                entry("bracket",     engineClient),
+                entry("stats",       statisticClient),
+                entry("admin",       feedbackClient)   // ← 11-я пара
         );
     }
+
 
     @RequestMapping("/**")
     public ResponseEntity<byte[]> proxy(HttpServletRequest req) {
