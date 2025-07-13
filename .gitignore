@@ -1,0 +1,64 @@
+########################################
+#  Java / Spring Boot project
+########################################
+
+# --- Компилированные Java-файлы ---
+*.class
+
+# --- Каталоги сборки Maven / Gradle ---
+/target/
+/build/
+
+# --- Логи и временные файлы ---
+*.log
+*.tmp
+*.swp
+*.swo
+
+# --- Настройки тестовых отчётов ---
+/surefire-reports/
+/jacoco.exec
+/coverage-reports/
+
+# --- IntelliJ IDEA ---
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# --- Eclipse ---
+.project
+.classpath
+.settings/
+bin/
+
+# --- VS Code ---
+.vscode/
+
+# --- ОС-специфическое ---
+.DS_Store           # macOS Finder
+Thumbs.db           # Windows Explorer
+ehthumbs.db
+desktop.ini
+
+# --- Средства контейнеризации ---
+docker-compose.override.yml
+docker-compose.local.yml
+.env
+*.env
+
+# --- CI / CD ---
+/.build/
+/dist/
+
+# --- Тестовые данные ---
+*.h2.db
+*.mv.db
+
+# --- Ошибочные дампы ---
+hs_err_pid*.log
+replay_pid*.log
+
+# --- IDE кэш Gradle (если нужно) ---
+.gradle/
