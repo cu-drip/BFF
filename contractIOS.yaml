@@ -8,7 +8,7 @@ servers:
   - url: /api/v1
 
 paths:
-  /tournir/list/{id}:
+  /tournaments/{id}:
     get:
       summary: Получить турниры пользователя по id
       description: Получить список турниров, на которых зарегистрирован участник по его ID
@@ -28,10 +28,34 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Tournament'
-
-  /tournir/{id}:
+                  
+    patch:
+      summary: Обновить информацию о турнире по id (частично) при изменении состояния турнира
+      description: Отправить данные турнира при изменении его состояния по ID турнира
+      parameters:
+        - name: id
+          in: path
+          description: ID турнира
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Объект турнира для обновления
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tournament'
+      responses:
+        '200':
+          description: Информация о турнире обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+                
     post:
-      summary: Обновить информацию о турнире по id при изменении состояния турнира
+      summary: Обновить информацию о турнире по id (полностью!) при изменении состояния турнира
       description: Отправить данные турнира при изменении его состояния по ID турнира
       parameters:
         - name: id
