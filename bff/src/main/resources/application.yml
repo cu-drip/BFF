@@ -1,8 +1,0 @@
-server:
-  port: 8080
-
-svc:
-  statistic:
-    base-url: http://localhost:8081      # уже было
-  ui:
-    base-url: http://localhost:8080        # куда пушим VM
