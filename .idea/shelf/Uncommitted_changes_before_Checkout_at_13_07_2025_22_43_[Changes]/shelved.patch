@@ -1,0 +1,17 @@
+Index: target/classes/application.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>server:\r\n  port: 8080\r\n\r\nsvc:\r\n  user:\r\n    base-url: http://51.250.38.151:8081\r\n  competition:\r\n    base-url: http://51.250.38.151:8082\r\n  feedback:\r\n    base-url: http://51.250.38.151:8083 #AAAAAAAAAAAAAAAAA\r\n  chat:\r\n    base-url: http://51.250.38.151:8000\r\n  engine:\r\n    base-url: http://51.250.38.151:8088\r\n  statistic:\r\n    base-url: http://51.250.38.151:8083
+===================================================================
+diff --git a/target/classes/application.yml b/target/classes/application.yml
+--- a/target/classes/application.yml	(revision 3b5f440459559762b62abe9660a94cd2149c46cd)
++++ b/target/classes/application.yml	(date 1752431165342)
+@@ -7,7 +7,7 @@
+   competition:
+     base-url: http://51.250.38.151:8082
+   feedback:
+-    base-url: http://51.250.38.151:8083 #AAAAAAAAAAAAAAAAA
++    base-url: http://51.250.38.151:8084 #AAAAAAAAAAAAAAAAA
+   chat:
+     base-url: http://51.250.38.151:8000
+   engine:
