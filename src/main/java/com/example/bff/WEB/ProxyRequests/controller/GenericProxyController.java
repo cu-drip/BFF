@@ -49,6 +49,7 @@ public class GenericProxyController {
         );
     }
 
+
     @RequestMapping("/**")
     public ResponseEntity<byte[]> proxy(HttpServletRequest req) {
 
