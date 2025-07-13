@@ -12,6 +12,8 @@ svc:
     base-url: ${SVC_CHAT_BASE_URL}
   statistic:
     base-url: ${SVC_STATISTIC_BASE_URL}
+  engine:
+    base-url: ${SVC_ENGINE_BASE_URL}
 
 # Настройки для Docker окружения
 spring:
