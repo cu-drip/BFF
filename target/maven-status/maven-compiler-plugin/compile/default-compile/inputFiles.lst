@@ -1,0 +1,9 @@
+D:\ДЗ\Java\BFF\src\main\java\com\example\bff\BffApplication.java
+D:\ДЗ\Java\BFF\src\main\java\com\example\bff\config\WebClientConfig.java
+D:\ДЗ\Java\BFF\src\main\java\com\example\bff\exception\GlobalErrorHandler.java
+D:\ДЗ\Java\BFF\src\main\java\com\example\bff\IOS\ProxyRequests\controller\GenericProxyController.java
+D:\ДЗ\Java\BFF\src\main\java\com\example\bff\IOS\StatisticsOfMatch\client\MatchClient.java
+D:\ДЗ\Java\BFF\src\main\java\com\example\bff\IOS\StatisticsOfMatch\client\WebClientMatchClient.java
+D:\ДЗ\Java\BFF\src\main\java\com\example\bff\IOS\StatisticsOfMatch\controller\MatchController.java
+D:\ДЗ\Java\BFF\src\main\java\com\example\bff\IOS\StatisticsOfMatch\model\MatchStatisticsDto.java
+D:\ДЗ\Java\BFF\src\main\java\com\example\bff\WEB\ProxyRequests\controller\GenericProxyController.java

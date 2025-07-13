@@ -46,4 +46,20 @@ public class WebClientConfig {
     ) {
         return builder.baseUrl(baseUrl).build();
     }
+
+    @Bean("engineWebClient")
+    public WebClient engineWebClient(
+            @Qualifier("webClientBuilder") WebClient.Builder builder,
+            @Value("${svc.engine.base-url}") String baseUrl
+    ) {
+        return builder.baseUrl(baseUrl).build();
+    }
+    @Bean("statisticWebClient")
+    public WebClient statisticWebClient(
+            @Qualifier("webClientBuilder") WebClient.Builder builder,
+            @Value("${svc.statistic.base-url}") String baseUrl
+    ) {
+        return builder.baseUrl(baseUrl).build();
+    }
+    //ДОБАВИТЬ ПРИ ДЕПЛОЕ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }

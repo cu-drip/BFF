@@ -1,75 +1,113 @@
 package com.example.bff.WEB.ProxyRequests.controller;
 
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpMethod;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 @RestController("iosProxyController")
 @RequestMapping("/api/v1web")
 public class GenericProxyController {
 
     private final Map<String, WebClient> clients;
+    private static final Set<String> SKIP_HEADERS =
+            Set.of(HttpHeaders.HOST, HttpHeaders.CONTENT_LENGTH);
 
     public GenericProxyController(
-            @Qualifier("userWebClient") WebClient userClient,
+            @Qualifier("userWebClient")        WebClient userClient,
             @Qualifier("competitionWebClient") WebClient competitionClient,
-            @Qualifier("feedbackWebClient") WebClient feedbackClient,
-            @Qualifier("chatWebClient") WebClient chatClient
+            @Qualifier("feedbackWebClient")    WebClient feedbackClient,
+            @Qualifier("chatWebClient")        WebClient chatClient,
+            @Qualifier("engineWebClient")      WebClient engineClient,
+            @Qualifier("statisticWebClient")   WebClient statisticClient
     ) {
         this.clients = Map.of(
-                "user", userClient,
-                "competition", competitionClient,
-                "feedback", feedbackClient,
-                "chat", chatClient,
-                "tournaments", competitionClient
+                "users",       userClient,
+                "auth",        userClient,
+                "feedback",    feedbackClient,
+                "chat",        chatClient,
+                "tournaments", competitionClient,
+                "teams",       competitionClient,
+                "tour",        engineClient,
+                "matches",     engineClient,
+                "stats",       statisticClient
         );
     }
 
     @RequestMapping("/**")
     public ResponseEntity<byte[]> proxy(HttpServletRequest req) {
 
-        // 1. снимаем только prefix "/api/v1web"
-        String pathAfterPrefix = req.getRequestURI().replaceFirst("/api/v1web", ""); // "/tournaments" или "/competition/stats/42"
+        /* ---------- alias и целевой WebClient ---------- */
+        String pathAfterPrefix = req.getRequestURI().replaceFirst("/api/v1web", "");
+        String[] parts = pathAfterPrefix.split("/", 3);      // ["", "tournaments", ...]
+        if (parts.length < 2) {
+            return ResponseEntity.badRequest()
+                    .body("Path is missing service alias".getBytes(StandardCharsets.UTF_8));
+        }
 
-        // 2. первый сегмент = алиас → какой WebClient взять
-        String alias = pathAfterPrefix.split("/", 3)[1];           // "tournaments" | "user" | "competition" | ...
-        // [0] пустой, потому что строка начинается с "/"
-
+        String alias = parts[1];
         WebClient client = clients.get(alias);
         if (client == null) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body(("Unknown service: " + alias).getBytes());
+                    .body(("Unknown service: " + alias).getBytes(StandardCharsets.UTF_8));
         }
 
-        // 3. собираем URI, НЕ удаляя сегмент alias
         String query = req.getQueryString() == null ? "" : "?" + req.getQueryString();
-        String uri   = "/api/v1" + pathAfterPrefix + query;        // → "/api/v1/tournaments", "/api/v1/competition/stats/42" …
+        String uri   = "/api/v1" + pathAfterPrefix + query;
 
-        byte[] body = client
+        /* ---------- читаем тело запроса (если есть) ---------- */
+        byte[] requestBody = new byte[0];
+        try {
+            if (req.getContentLengthLong() != 0) {
+                requestBody = StreamUtils.copyToByteArray(req.getInputStream());
+            }
+        } catch (IOException io) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(("Cannot read body: " + io.getMessage()).getBytes(StandardCharsets.UTF_8));
+        }
+
+        /* ---------- собираем и отправляем ---------- */
+        WebClient.RequestHeadersSpec<?> spec = client
                 .method(HttpMethod.valueOf(req.getMethod()))
                 .uri(uri)
-                .headers(h -> Collections.list(req.getHeaderNames())
-                        .forEach(n -> h.addAll(n, Collections.list(req.getHeaders(n)))))
+                .headers(h -> Collections.list(req.getHeaderNames()).stream()
+                        .filter(n -> !SKIP_HEADERS.contains(n))
+                        .forEach(n -> h.addAll(n, Collections.list(req.getHeaders(n)))));
+
+        if (requestBody.length > 0 && methodAllowsBody(req.getMethod())) {
+            spec = ((WebClient.RequestBodySpec) spec).bodyValue(requestBody);
+        }
+
+        byte[] body = spec
                 .retrieve()
                 .bodyToMono(byte[].class)
-                .block(Duration.ofSeconds(3));
+                .timeout(Duration.ofSeconds(5))
+                .onErrorResume(ex -> Mono.just(("Upstream error: " + ex.getMessage())
+                        .getBytes(StandardCharsets.UTF_8)))
+                .block();
 
         return ResponseEntity.ok(body);
+    }
+
+    /** Для каких HTTP-методов допустимо тело */
+    private static boolean methodAllowsBody(String m) {
+        return switch (m) {
+            case "GET", "HEAD", "OPTIONS", "TRACE" -> false;
+            default                                -> true;
+        };
     }
 }
