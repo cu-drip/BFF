@@ -27,7 +27,7 @@ public class GenericProxyController {
 
     private final Map<String, WebClient> clients;
     private static final Set<String> SKIP_HEADERS =
-            Set.of(HttpHeaders.HOST, HttpHeaders.CONTENT_LENGTH);
+            Set.of(HttpHeaders.HOST, HttpHeaders.CONTENT_LENGTH, HttpHeaders.TRANSFER_ENCODING);
 
     public GenericProxyController(
             @Qualifier("userWebClient")        WebClient userClient,
