@@ -21,13 +21,23 @@ import java.util.Set;
 
 import static java.util.Map.entry;
 
+/**
+ * Простой «сквозной» BFF-прокси.
+ * <p>
+ *  ▸ Первым сегментом после /api/v1web/ выбирается alias сервиса («users», «tournaments» …).
+ *  ▸ Запрос пересылается на соответствующий WebClient c теми же методом/заголовками/телом.
+ *  ▸ Ответ микросервиса (статус + заголовки + тело) возвращается без изменений.
+ *  ▸ Сетевые ошибки и тайм-ауты заворачиваются в 502 Bad Gateway.
+ */
 @RestController("iosProxyController")
 @RequestMapping("/api/v1web")
 public class GenericProxyController {
 
     private final Map<String, WebClient> clients;
+
+    /** Заголовки, которые не стоит прокидывать дальше */
     private static final Set<String> SKIP_HEADERS =
-            Set.of(HttpHeaders.HOST, HttpHeaders.CONTENT_LENGTH, HttpHeaders.TRANSFER_ENCODING);
+            Set.of(HttpHeaders.HOST, HttpHeaders.CONTENT_LENGTH);
 
     public GenericProxyController(
             @Qualifier("userWebClient")        WebClient userClient,
@@ -48,17 +58,16 @@ public class GenericProxyController {
                 entry("matches",     engineClient),
                 entry("bracket",     engineClient),
                 entry("stats",       statisticClient),
-                entry("admin",       feedbackClient)   // ← 11-я пара
+                entry("admin",       feedbackClient)    // ← 11-я пара
         );
     }
-
 
     @RequestMapping("/**")
     public ResponseEntity<byte[]> proxy(HttpServletRequest req) {
 
         /* ---------- alias и целевой WebClient ---------- */
         String pathAfterPrefix = req.getRequestURI().replaceFirst("/api/v1web", "");
-        String[] parts = pathAfterPrefix.split("/", 3);      // ["", "tournaments", ...]
+        String[] parts = pathAfterPrefix.split("/", 3);          // ["", "<alias>", ...]
         if (parts.length < 2) {
             return ResponseEntity.badRequest()
                     .body("Path is missing service alias".getBytes(StandardCharsets.UTF_8));
@@ -85,7 +94,7 @@ public class GenericProxyController {
                     .body(("Cannot read body: " + io.getMessage()).getBytes(StandardCharsets.UTF_8));
         }
 
-        /* ---------- собираем и отправляем ---------- */
+        /* ---------- собираем проксируемый запрос ---------- */
         WebClient.RequestHeadersSpec<?> spec = client
                 .method(HttpMethod.valueOf(req.getMethod()))
                 .uri(uri)
@@ -97,18 +106,20 @@ public class GenericProxyController {
             spec = ((WebClient.RequestBodySpec) spec).bodyValue(requestBody);
         }
 
-        byte[] body = spec
-                .retrieve()
-                .bodyToMono(byte[].class)
+        /* ---------- вызываем сервис и возвращаем его ответ «как есть» ---------- */
+        ResponseEntity<byte[]> upstream = spec
+                .exchangeToMono(r -> r.toEntity(byte[].class))          // статус + заголовки + тело
                 .timeout(Duration.ofSeconds(5))
-                .onErrorResume(ex -> Mono.just(("Upstream error: " + ex.getMessage())
-                        .getBytes(StandardCharsets.UTF_8)))
+                .onErrorResume(ex -> Mono.just(                         // сетевые ошибки → 502
+                        ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                                .body(("Upstream error: " + ex.getMessage())
+                                        .getBytes(StandardCharsets.UTF_8))))
                 .block();
 
-        return ResponseEntity.ok(body);
+        return upstream;
     }
 
-    /** Для каких HTTP-методов допустимо тело */
+    /** Какие HTTP-методы допускают body */
     private static boolean methodAllowsBody(String m) {
         return switch (m) {
             case "GET", "HEAD", "OPTIONS", "TRACE" -> false;
