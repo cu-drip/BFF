@@ -11,4 +11,6 @@
      */
     public interface MatchClient {
         Mono<List<MatchStatisticsDto>> getMatchStatsByTournamentId(UUID tournamentId);
+
+        Mono<Void> saveMatchStats(UUID tournamentId, List<MatchStatisticsDto> stats);
     }
