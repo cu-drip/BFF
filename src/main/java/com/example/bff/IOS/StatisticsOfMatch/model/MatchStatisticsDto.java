@@ -5,6 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.example.bff.IOS.StatisticsOfMatch.config.LenientLocalDateTimeDeserializer;
+import com.example.bff.IOS.StatisticsOfMatch.config.LocalDateTimeNoZoneSerializer;
+
 
 public record MatchStatisticsDto(
         @JsonProperty("tournamentID") String tournamentId,
@@ -30,11 +38,16 @@ public record MatchStatisticsDto(
             String phoneNumber,
             String email,
             String hashedPassword,
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
             LocalDate dateOfBirth,
             int age,
             String sex,
             int weight,
             int height,
+            @JsonSerialize(using = LocalDateTimeNoZoneSerializer.class)
+            @JsonDeserialize(using = LenientLocalDateTimeDeserializer.class)
+            //LocalDateTime createdAt,
+            //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
             LocalDateTime createdAt,
             String bio,
             String avatarUrl,

@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
+
+
 @RestController
 @RequestMapping("/api/v1spec/MatchStats")
 public class MatchController {
@@ -25,5 +28,13 @@ public class MatchController {
     public List<MatchStatisticsDto> get(@PathVariable UUID tournamentId) {
         return matchClient.getMatchStatsByTournamentId(tournamentId)
                 .block();            // оставляем блокировку, как было
+    }
+
+    @PostMapping("/{tournamentId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void post(@PathVariable UUID tournamentId,
+                     @RequestBody List<MatchStatisticsDto> stats) {
+
+        matchClient.saveMatchStats(tournamentId, stats).block();
     }
 }
