@@ -43,7 +43,7 @@ import java.util.Map;
 import static java.util.Map.entry;
 
 @RestController("webProxyController")
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/{service:^(?!spec$).+}")
 public class GenericProxyController {
 
     private final Map<String, WebClient> clients;
