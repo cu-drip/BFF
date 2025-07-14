@@ -8,23 +8,22 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/match")
+@RequestMapping("/api/v1spec/MatchStats")
 public class MatchController {
-
-    private final MatchClient matchClient;
-
-    public MatchController(MatchClient matchClient) {
-        this.matchClient = matchClient;
-    }
 
     /**
      * UI делает GET /match/stats/{tournamentId}.
      * BFF блокирует reactive-цепочку, т.к. мы на обычном MVC-потоке.
      */
-    @GetMapping("/stats/{tournamentId}")
-    public List<MatchStatisticsDto> getMatchStatsByTournament(@PathVariable UUID tournamentId) {
-        return matchClient
-                .getMatchStatsByTournamentId(tournamentId)
-                .block();
+
+    private final MatchClient matchClient;
+    public MatchController(MatchClient matchClient) {
+        this.matchClient = matchClient;
+    }
+
+    @GetMapping("/{tournamentId}")             // UI зовёт /api/v1/MatchStats/{id}
+    public List<MatchStatisticsDto> get(@PathVariable UUID tournamentId) {
+        return matchClient.getMatchStatsByTournamentId(tournamentId)
+                .block();            // оставляем блокировку, как было
     }
 }
